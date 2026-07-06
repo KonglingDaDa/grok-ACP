@@ -7,8 +7,17 @@ import { fileURLToPath } from "node:url";
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const binPath = path.join(moduleDir, "..", "bin", "grok-acp.mjs");
 
+// smoke 需要真实 grok CLI（+ 登录态）。CI / 无 grok 的环境（GitHub ubuntu runner）里
+// grok 二进制不存在，若不跳过这两个用例，`npm test` 会恒红，护栏 CI 形同虚设。
+// 探测：grok 不在 PATH 上时 spawnSync 会带 error(ENOENT) → 跳过；本地有 grok 则照常跑。
+function grokOnPath() {
+  const probe = spawnSync("grok", ["--version"], { timeout: 5000 });
+  return !probe.error;
+}
+const SKIP_SMOKE = grokOnPath() ? false : "grok CLI 不在 PATH（CI/无登录环境），跳过 smoke";
+
 describe("smoke tests", () => {
-  it("grok-acp run with inline prompt should succeed", () => {
+  it("grok-acp run with inline prompt should succeed", { skip: SKIP_SMOKE }, () => {
     const result = spawnSync("node", [
       binPath,
       "run",
@@ -31,7 +40,7 @@ describe("smoke tests", () => {
     assert.match(result.stderr, /grokACP sessionId=/, "Expected stderr to contain sessionId");
   });
 
-  it("grok-acp doctor should succeed", () => {
+  it("grok-acp doctor should succeed", { skip: SKIP_SMOKE }, () => {
     const result = spawnSync("node", [binPath, "doctor"], {
       encoding: "utf8",
       timeout: 10000
