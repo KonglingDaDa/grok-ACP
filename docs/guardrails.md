@@ -54,6 +54,11 @@ CI 全绿是合入 `main` 的前置条件。
 - 生成物**不入库**：`.codex-artifacts/`（Grok 回执+截图）、`.gitnexus/`（代码图谱索引）、`.hallmark/`、`ui/node_modules`、`ui/dist` 均在 `.gitignore`。
 - 任务文档与回执（`工程师任务/`）**入库**，作为工程过程的审计轨迹。
 
+## 5.1 测试隔离（别污染真实监控）
+
+- 会 spawn `grok-acp run` 的测试（`test/smoke.test.mjs`、`npm run smoke`）**必须**用临时 `GROK_ACP_HOME`（`fs.mkdtempSync` / `$(mktemp -d)`）把任务记录写进可丢弃目录，绝不落进用户真实的 `~/.grok-acp/runs`——否则测试任务会当噪音显示在监控面板上。
+- 监控对"运行中但进程已死"的任务显示"已中断"；`recheckInterrupted` 每次回磁盘重读 meta，让快速完成、`fs.watch` 漏掉终态写入的任务自愈成 done，不会永远卡在"已中断"。
+
 ## 6. 零依赖铁律
 
 主仓库不得新增任何 npm 依赖（`dependencies` / `devDependencies` 恒为空）。所有护栏都用 Node 原生能力实现：`node --test`、`node --check`、`--experimental-test-coverage`、native git hook。新增护栏时同样遵守此约束；`ui/` 子目录是唯一例外。

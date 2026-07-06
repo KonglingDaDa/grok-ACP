@@ -1,6 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { computeEffectiveStatus, taskForList } from "../src/monitor-task-index.mjs";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { computeEffectiveStatus, taskForList, createTaskIndex } from "../src/monitor-task-index.mjs";
 
 describe("computeEffectiveStatus", () => {
   it("returns persisted status when not running", () => {
@@ -48,5 +51,57 @@ describe("taskForList", () => {
     assert.strictEqual(list.effectiveStatus, "done");
     assert.strictEqual(list.promptPreview, "secret");
     assert.strictEqual(Object.prototype.hasOwnProperty.call(list, "prompt"), false);
+  });
+});
+
+describe("createTaskIndex recheckInterrupted (self-heal)", () => {
+  function writeMeta(runsDir, taskId, meta) {
+    const dir = path.join(runsDir, taskId);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "meta.json"), JSON.stringify({ id: taskId, ...meta }), "utf8");
+    return dir;
+  }
+
+  it("recovers a completed-but-missed task from interrupted to done by re-reading disk", () => {
+    const runsDir = fs.mkdtempSync(path.join(os.tmpdir(), "grok-idx-"));
+    const broadcasts = [];
+    const index = createTaskIndex(runsDir, { onTask: (t) => broadcasts.push(t), onSample: () => {} });
+    try {
+      // Indexed while "running" with a dead pid -> effectiveStatus interrupted.
+      writeMeta(runsDir, "t1", { status: "running", pid: 999_999_999, heartbeatAt: new Date().toISOString() });
+      index.upsertTask("t1", { broadcast: false });
+      assert.strictEqual(index.tasksById.get("t1").effectiveStatus, "interrupted");
+
+      // The run actually finished: terminal status hits disk, but the cached
+      // meta is stale (fs.watch dropped the event).
+      writeMeta(runsDir, "t1", { status: "done", pid: 999_999_999, endedAt: new Date().toISOString() });
+
+      index.recheckInterrupted();
+
+      assert.strictEqual(index.tasksById.get("t1").effectiveStatus, "done", "should self-heal to done");
+      assert.ok(
+        broadcasts.some((t) => t.id === "t1" && t.effectiveStatus === "done"),
+        "should broadcast the corrected done status",
+      );
+    } finally {
+      index.closeAllWatchers();
+      fs.rmSync(runsDir, { recursive: true, force: true });
+    }
+  });
+
+  it("keeps a genuinely dead run as interrupted (disk still running, pid gone)", () => {
+    const runsDir = fs.mkdtempSync(path.join(os.tmpdir(), "grok-idx-"));
+    const index = createTaskIndex(runsDir, { onTask: () => {}, onSample: () => {} });
+    try {
+      writeMeta(runsDir, "t2", { status: "running", pid: 999_999_999, heartbeatAt: new Date().toISOString() });
+      index.upsertTask("t2", { broadcast: false });
+
+      index.recheckInterrupted();
+
+      assert.strictEqual(index.tasksById.get("t2").effectiveStatus, "interrupted");
+    } finally {
+      index.closeAllWatchers();
+      fs.rmSync(runsDir, { recursive: true, force: true });
+    }
   });
 });
