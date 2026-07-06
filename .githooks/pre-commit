@@ -1,0 +1,13 @@
+#!/bin/sh
+# grokACP pre-commit guardrail — zero-dep.
+# 启用：git config core.hooksPath .githooks
+# 跳过（应急）：git commit --no-verify
+set -e
+
+echo "[pre-commit] lint…"
+npm run lint
+
+echo "[pre-commit] backend tests…"
+npm test
+
+echo "[pre-commit] OK"

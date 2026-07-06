@@ -139,10 +139,10 @@ Always pass `"repo": "grokACP"` — multiple repos may be indexed on the same ma
 
 ### Code style
 
-- Plain `.mjs` modules; no TypeScript, no bundler, no test framework yet.
+- Plain `.mjs` modules; no TypeScript, no bundler. Tests use the native `node:test` runner (`test/*.test.mjs`); `ui/` uses vitest.
 - Use `node:fs`, `node:path`, `node:child_process`, `node:readline`.
 - CLI args parsed manually in `parseArgs()` — kebab-case flags map to camelCase keys.
-- Errors throw `Error` with actionable messages; `bin/grok-acp.mjs` prints stack and exits 1.
+- Errors throw `Error` with actionable messages; `bin/grok-acp.mjs` prints stack and exits 1 — except recoverable timeouts (`error.isTimeout`), which print a resume hint and exit 2.
 - Beijing timezone for report filenames and timestamps (`nowBeijingIso`, `nowBeijingStamp`).
 
 ### What to ignore

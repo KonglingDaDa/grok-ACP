@@ -215,14 +215,19 @@ export function createTaskIndex(runsDir, { onTask, onSample }) {
     }
   }
 
-  function recheckInterrupted() {
-    for (const record of tasksById.values()) {
-      if (record.meta.status !== "running") continue;
-      const effectiveStatus = computeEffectiveStatus(record.meta);
-      if (effectiveStatus !== record.effectiveStatus) {
-        record.effectiveStatus = effectiveStatus;
-        onTask(taskForList(record.meta, record.effectiveStatus));
-      }
+  function refreshRunningTasks() {
+    // Re-read meta from disk for tasks we still believe are running. A fast-
+    // completing run can write its terminal status (done/error/timeout) while
+    // fs.watch drops the change event, leaving the cached meta stale and the
+    // task stuck showing "interrupted" forever. upsertTask reloads meta.json,
+    // recomputes effectiveStatus, closes the watcher on terminal status, and
+    // broadcasts the change — so a completed-but-missed task self-heals, while a
+    // genuinely dead run (disk still "running", pid gone) still resolves to
+    // "interrupted". Snapshot keys: upsertTask mutates the map in place.
+    for (const taskId of [...tasksById.keys()]) {
+      const record = tasksById.get(taskId);
+      if (!record || record.meta.status !== "running") continue;
+      upsertTask(taskId, { broadcast: true });
     }
   }
 
@@ -258,7 +263,7 @@ export function createTaskIndex(runsDir, { onTask, onSample }) {
     upsertTask,
     fullRescan,
     scheduleTopLevelRescan,
-    recheckInterrupted,
+    refreshRunningTasks,
     removeTaskRecord,
     closeAllWatchers,
   };
