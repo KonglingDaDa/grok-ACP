@@ -12,6 +12,7 @@ const META_BROADCAST_FIELDS = [
   "heartbeatAt",
   "tokensOut",
   "chars",
+  "toolCallCount",
   "endedAt",
   "error",
   "sessionId",

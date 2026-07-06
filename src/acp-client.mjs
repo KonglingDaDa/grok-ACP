@@ -170,7 +170,10 @@ export class GrokAcpClient {
         this.onToolEvent
       ) {
         try {
-          this.onToolEvent();
+          // Pass the update type so the recorder can count distinct tool
+          // *calls* (tool_call) without double-counting their tool_call_update
+          // progress events.
+          this.onToolEvent(update.sessionUpdate);
         } catch {
           // Monitoring is a side channel; a broken callback must never
           // disrupt ACP stream handling.

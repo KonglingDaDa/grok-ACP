@@ -57,9 +57,25 @@ export function RunningCard({ task, samples, onOpen, ensureSamples, cardRef, fla
           </b>
         </span>
         <Metric label="累计输出" value={formatCount(task.tokensOut)} />
+        <Metric label="工具调用" value={formatCount(task.toolCallCount ?? 0)} />
         <Metric label="耗时" value={formatElapsed(elapsedMs)} />
         <Metric label="启动" value={formatCardTime(task.startedAt)} />
-        <ContextChip context={task.context} />
+        {task.context ? (
+          <ContextChip context={task.context} />
+        ) : (
+          <span
+            className="mono-label inline-flex shrink-0 items-center px-xs py-2xs text-xs leading-[1.6]"
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--color-rule-2)',
+              color: 'var(--color-muted)',
+              borderRadius: 'var(--radius-pill)',
+            }}
+            title="上下文用量与压缩次数由 Grok 在跑完当前 prompt 后才落盘，运行中暂不可得"
+          >
+            上下文 · 完成后可见
+          </span>
+        )}
       </div>
       <FooterMeta task={task} />
     </CardShell>

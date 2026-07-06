@@ -201,6 +201,7 @@ function buildTaskMeta(spec: DemoTaskSpec): TaskMeta {
     heartbeatAt,
     tokensOut: 0,
     chars: 0,
+    toolCallCount: spec.effectiveStatus === 'running' ? 4 : 0,
     durationMs,
     context: spec.context,
     reportPath: spec.endedAgoSec === null ? null : `.codex-artifacts/grok-acp-runs/${spec.name}.md`,

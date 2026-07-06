@@ -173,15 +173,15 @@ describe("GrokAcpClient", () => {
     client.close();
   });
 
-  it("should trigger onToolEvent callback on tool_call", async () => {
+  it("should trigger onToolEvent callback with the update type on tool_call", async () => {
     const proc = createFakeProcess(createHappyPathResponder({ toolCall: true, replyText: "Done" }));
-    let toolEventTriggered = false;
+    const toolEvents = [];
     const client = new GrokAcpClient({
       model: "grok-composer-2.5-fast",
       cwd: "/tmp",
       onChunk: () => {},
-      onToolEvent: () => {
-        toolEventTriggered = true;
+      onToolEvent: (type) => {
+        toolEvents.push(type);
       },
     });
 
@@ -189,7 +189,8 @@ describe("GrokAcpClient", () => {
 
     await client.runPrompt("Test", { stableIntervalMs: 50, stableChecks: 2 });
 
-    assert.strictEqual(toolEventTriggered, true, "onToolEvent should be triggered");
+    assert.ok(toolEvents.length > 0, "onToolEvent should be triggered");
+    assert.ok(toolEvents.includes("tool_call"), "onToolEvent should receive the 'tool_call' update type");
     client.close();
   });
 
