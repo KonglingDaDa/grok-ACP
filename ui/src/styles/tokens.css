@@ -1,0 +1,51 @@
+/* Hallmark · genre: atmospheric · macrostructure: Bento Grid (live dashboard adaptation) · theme: Graphite (custom neutral dark, v3: chroma boosted 0.018–0.025) · enrichment: none · nav: N6 · footer: Ft6 · display: Inter Tight Variable + JetBrains Mono */
+
+:root {
+  /* paper & structure — 中性冷灰 */
+  --color-paper:    oklch(15% 0.018 260);
+  --color-paper-2:  oklch(24% 0.020 260);
+  --color-paper-3:  oklch(30% 0.022 260);
+  --color-rule:     oklch(36% 0.020 260);
+  --color-rule-2:   oklch(48% 0.023 260);
+
+  /* ink ladder — 中性灰阶 */
+  --color-muted:    oklch(64% 0.023 260);
+  --color-neutral:  oklch(75% 0.021 260);
+  --color-ink-2:    oklch(86% 0.018 260);
+  --color-ink:      oklch(94% 0.015 260);
+  --color-accent:   oklch(70% 0.145 250);
+  --color-focus:    oklch(74% 0.145 250);
+
+  /* market semantics — 行情语义 */
+  --color-up:       oklch(72% 0.170 150);   /* running / live */
+  --color-up-tint: oklch(72% 0.170 150 / 0.07);
+  --color-up-tint-border: oklch(72% 0.170 150 / 0.22);
+  --color-down:     oklch(65% 0.190 25);    /* error */
+  --color-warn:     oklch(77% 0.140 85);    /* interrupted / ctx watch */
+  --color-crit:     oklch(58% 0.210 25);    /* ctx critical */
+
+  /* type — display + body pairing */
+  --font-display: "Inter Tight Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-mono: var(--font-body);
+  --text-xs: 0.6875rem; --text-sm: 0.8125rem; --text-base: 0.9375rem;
+  --text-lg: 1.125rem;  --text-xl: 1.5rem;    --text-2xl: 1.875rem;
+  --tracking-label: 0.18em;
+  --lh-tight: 1.2; --lh-normal: 1.55;
+
+  /* space — 4pt scale */
+  --space-2xs: 0.25rem; --space-xs: 0.5rem; --space-sm: 0.75rem;
+  --space-md: 1rem; --space-lg: 1.5rem; --space-xl: 2rem; --space-2xl: 3rem;
+
+  /* shape & motion */
+  --radius-card: 10px; --radius-pill: 6px; --rule-card: 1px;
+  --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.35);
+  --shadow-hover: 0 4px 16px oklch(0% 0 0 / 0.40);
+  --glow-live: 0 0 0 1px oklch(72% 0.17 150 / 0.22);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 240ms; --dur-panel: 260ms;
+
+  --z-sticky-nav: 300; --z-panel: 400; --z-tooltip: 600;
+}

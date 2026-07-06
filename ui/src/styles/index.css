@@ -1,0 +1,235 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* self-hosted fonts */
+@import "@fontsource-variable/inter-tight";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/700.css";
+
+/* Bridge the locked token block (§6) into Tailwind v4's utility namespace.
+   tokens.css remains the single source of truth; nothing here redefines a value. */
+@theme inline {
+  --color-paper: var(--color-paper);
+  --color-paper-2: var(--color-paper-2);
+  --color-paper-3: var(--color-paper-3);
+  --color-rule: var(--color-rule);
+  --color-rule-2: var(--color-rule-2);
+
+  --color-muted: var(--color-muted);
+  --color-neutral: var(--color-neutral);
+  --color-ink-2: var(--color-ink-2);
+  --color-ink: var(--color-ink);
+  --color-accent: var(--color-accent);
+  --color-focus: var(--color-focus);
+
+  --color-up: var(--color-up);
+  --color-down: var(--color-down);
+  --color-warn: var(--color-warn);
+  --color-crit: var(--color-crit);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --text-xs: var(--text-xs);
+  --text-sm: var(--text-sm);
+  --text-base: var(--text-base);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-2xl: var(--text-2xl);
+
+  --spacing-2xs: var(--space-2xs);
+  --spacing-xs: var(--space-xs);
+  --spacing-sm: var(--space-sm);
+  --spacing-md: var(--space-md);
+  --spacing-lg: var(--space-lg);
+  --spacing-xl: var(--space-xl);
+  --spacing-2xl: var(--space-2xl);
+
+  --radius-card: var(--radius-card);
+  --radius-pill: var(--radius-pill);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    overflow-x: clip;
+    background: var(--color-paper);
+    color: var(--color-neutral);
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--lh-normal);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  #root {
+    min-height: 100vh;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-paper);
+  }
+
+  /* focus rings appear instantly — no transition, keyboard users need it now (slop-test #16) */
+  :focus {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    transition: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-paper);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-rule-2);
+  }
+}
+
+@layer utilities {
+  .mono-label {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+  }
+
+  /* running LED — pure CSS breathing pulse, motion budget item #4 (§4.7) */
+  @keyframes led-breathe {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+
+  .led-running {
+    animation: led-breathe 2s ease-in-out infinite;
+  }
+
+  .led-running[data-led-delay='1'] {
+    animation-delay: 0s;
+  }
+  .led-running[data-led-delay='2'] {
+    animation-delay: 0.27s;
+  }
+  .led-running[data-led-delay='3'] {
+    animation-delay: 0.53s;
+  }
+  .led-running[data-led-delay='4'] {
+    animation-delay: 0.79s;
+  }
+  .led-running[data-led-delay='5'] {
+    animation-delay: 1.13s;
+  }
+  .led-running[data-led-delay='6'] {
+    animation-delay: 1.41s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .led-running {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
+  /* TaskCard hover (§7.2) — border-color/box-shadow only, no scale/transform. */
+  .task-card {
+    background: var(--color-paper-2);
+    border: var(--rule-card) solid var(--color-rule);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    transition:
+      border-color var(--dur-micro) var(--ease-out),
+      box-shadow var(--dur-short) var(--ease-out);
+    cursor: pointer;
+  }
+
+  .task-card:hover {
+    border-color: var(--color-rule-2);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .task-card-delete {
+    opacity: 0.6;
+    transition: opacity 120ms var(--ease-out);
+    z-index: 1;
+  }
+
+  .task-card:hover .task-card-delete,
+  .task-card-delete:focus-visible {
+    opacity: 1;
+  }
+
+  .task-card-delete:hover {
+    color: var(--color-down);
+  }
+
+  /* DetailPanel slide/mask targets (GSAP budget item #3, §4.7) — base hidden state before tween-in. */
+  .panel-mask {
+    background: color-mix(in oklch, var(--color-paper) 72%, transparent);
+  }
+
+  /* DetailPanel 细滚动条（§7.3） */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-rule-2);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted);
+  }
+
+  /* "清理已结束"按钮 hover 增强 */
+  .clear-finished-btn {
+    transition:
+      background var(--dur-micro) var(--ease-out),
+      border-color var(--dur-micro) var(--ease-out);
+  }
+
+  .clear-finished-btn:hover {
+    background: oklch(65% 0.19 25 / 0.15);
+    border-color: var(--color-down);
+  }
+
+  /* Instant press feedback for every clickable control (buttons + role=button cards) —
+     opacity only, no transition (slop-test #16/#28: focus-visible/active must both be instant). */
+  button:active,
+  [role='button']:active {
+    opacity: 0.75;
+  }
+}
