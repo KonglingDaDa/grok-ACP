@@ -10,10 +10,18 @@
     "doctor": "node ./bin/grok-acp.mjs doctor",
     "smoke": "node ./bin/grok-acp.mjs run --prompt-text \"用一句中文回复：grokACP smoke ok。\" --cwd /home/desk/dev/repos/zq --out-dir ./.runs --timeout-ms 60000 --quiet",
     "smoke:write": "rm -f /tmp/grok-acp-write-smoke.txt && node ./bin/grok-acp.mjs run --prompt-text \"请创建或覆盖 /tmp/grok-acp-write-smoke.txt，内容只写 grok-acp-write-ok，然后回复 done。\" --cwd /home/desk/dev/repos/zq --out-dir /tmp/grok-acp-runs --timeout-ms 120000 --quiet && test \"$(cat /tmp/grok-acp-write-smoke.txt)\" = \"grok-acp-write-ok\"",
-    "lint": "node --check ./bin/grok-acp.mjs && node --check ./src/acp-client.mjs && node --check ./src/cli.mjs && node --check ./src/config.mjs && node --check ./src/report.mjs && node --check ./src/session-store.mjs"
+    "lint": "node --check ./bin/grok-acp.mjs && node --check ./src/acp-client.mjs && node --check ./src/cli.mjs && node --check ./src/config.mjs && node --check ./src/dispatch-recorded.mjs && node --check ./src/paths.mjs && node --check ./src/report.mjs && node --check ./src/session-store.mjs && node --check ./src/task-recorder.mjs && node --check ./src/monitor-throughput.mjs && node --check ./src/monitor-task-index.mjs && node --check ./src/monitor-routes.mjs && node --check ./src/monitor-server.mjs && node --check ./tools/dev-fake-task.mjs && node --check ./tools/test-monitor.mjs",
+    "test:monitor": "node ./tools/test-monitor.mjs",
+    "test": "node --test test/**/*.test.mjs",
+    "test:watch": "node --test --watch test/**/*.test.mjs",
+    "test:ui": "npm --prefix ui run test",
+    "test:all": "npm run test && npm run test:ui",
+    "ui": "node ./bin/grok-acp.mjs ui",
+    "ui:build": "npm --prefix ui install && npm --prefix ui run build",
+    "fake": "node ./tools/dev-fake-task.mjs --home /tmp/grok-acp-demo"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.0.0"
   },
   "license": "UNLICENSED"
 }
