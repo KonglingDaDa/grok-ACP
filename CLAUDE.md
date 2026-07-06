@@ -60,7 +60,7 @@ Or via npm scripts from repo root.
 | --- | --- |
 | `DEFAULT_MODEL` | `grok-composer-2.5-fast` |
 | `DEFAULT_ZQ_CWD` | `/home/desk/dev/repos/zq` |
-| `--timeout-ms` | `120000` |
+| `--timeout-ms` | `1200000` |
 | `--out-dir` | `<cwd>/.codex-artifacts/grok-acp-runs` |
 
 Change `DEFAULT_ZQ_CWD` only when the primary dispatch target repo moves.
@@ -77,6 +77,65 @@ npm run smoke:write   # end-to-end: Grok writes /tmp/grok-acp-write-smoke.txt
 ```
 
 `smoke` and `smoke:write` require a logged-in Grok CLI (`grok login`) or `XAI_API_KEY`.
+
+```bash
+npm run test:monitor   # fake tasks + monitor API/SSE/DELETE (no Grok)
+```
+
+### Run tests
+
+```bash
+npm test          # 运行所有测试（包括 smoke）
+npm run test:watch  # 监听模式，文件改动自动重跑
+node --test test/smoke.test.mjs  # 只跑 smoke 测试
+```
+
+**测试框架：** Node.js 原生 `node:test`（需要 Node 20+），零 npm 依赖。
+
+**测试文件命名：** `test/<name>.test.mjs`
+
+**写测试时遵循 TDD 模式：**
+1. 先写测试（包含所有边界情况）
+2. 验证测试失败（红）
+3. 写实现
+4. 验证测试通过（绿）
+
+详见 `工程师任务/2026-07-04-0340-AI友好化-测试与文档/PRD.md` §2.2。
+
+### GitNexus (code graph — use proactively)
+
+This repo is indexed as **`grokACP`**. Prefer GitNexus over blind grep when you need **execution flows, blast radius, or review scope** — especially across `src/`, `tools/`, and `ui/src/`.
+
+**Keep the index fresh** (after meaningful edits, or when `list_repos` shows staleness):
+
+```bash
+cd /home/desk/dev/repos/grokACP
+gitnexus analyze --index-only --name grokACP
+```
+
+`--index-only` skips injecting AGENTS.md / skills; safe for repeat runs.
+
+**MCP workflow (flexible — pick what fits the task):**
+
+| Step | Tool | Use when |
+| --- | --- | --- |
+| 1 | `list_repos` | Confirm `grokACP` is indexed; check staleness hint |
+| 2 | `detect_changes` `{ "repo": "grokACP", "scope": "all" }` | Pre-commit / code review: map diff → symbols → affected processes |
+| 3 | `query` `{ "repo": "grokACP", "query": "…", "task_context": "…" }` | Find how a feature fits together (e.g. monitor recorder, SSE, onChunk) |
+| 4 | `context` `{ "repo": "grokACP", "name": "…", "file_path": "…" }` | 360° view of one symbol: callers, callees, process membership |
+| 5 | `impact` `{ "repo": "grokACP", "target": "…", "direction": "upstream", "file_path": "…" }` | Before editing shared code (e.g. `handleLine`, `dispatchRecordedPrompt`): what breaks |
+
+Always pass `"repo": "grokACP"` — multiple repos may be indexed on the same machine.
+
+**CLI equivalents** (no MCP): `gitnexus query`, `context`, `impact`, `detect-changes -r grokACP`.
+
+**Practical combos:**
+
+- **Code review:** `detect_changes` → `impact` on changed hub symbols → `context` on anything HIGH risk → read files only where the graph points.
+- **New feature / unfamiliar area:** `query` with a natural-language goal → `context` on top process symbols → grep/read for line-level detail.
+- **Refactor:** `impact` upstream on the symbol you plan to move/rename → adjust callers the graph lists before coding.
+
+**Limits:** `detect_changes` only sees **git-tracked** diffs; untracked new files still appear in the index after `analyze`, but won't show in `detect_changes` until added. Grep/file read remain right for exact strings, config flags, and markdown contracts (`docs/monitor-ui-design.md`).
 
 ### Code style
 

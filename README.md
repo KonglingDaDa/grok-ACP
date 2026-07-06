@@ -44,6 +44,22 @@ node /home/desk/dev/repos/grokACP/bin/grok-acp.mjs run \
   --prompt-text "用一句中文回复：ACP 调用成功。"
 ```
 
+## Testing
+
+Run all tests:
+
+```bash
+npm test
+```
+
+Run tests in watch mode:
+
+```bash
+npm run test:watch
+```
+
+Tests are written using Node.js built-in `node:test` (requires Node 20+). No external dependencies needed.
+
 ## AI-Facing CLI Contract
 
 Command:
@@ -65,7 +81,7 @@ Execution options:
 | --- | --- | --- |
 | `--cwd <path>` | `/home/desk/dev/repos/zq` | Working directory passed to ACP `session/new` and used to spawn Grok. |
 | `--model <id>` | `grok-composer-2.5-fast` | Model passed to `grok agent --model <id> stdio`. |
-| `--timeout-ms <number>` | `120000` | Timeout for each JSON-RPC request. Increase for long tasks. |
+| `--timeout-ms <number>` | `1200000` | Timeout for each JSON-RPC request (20 min). Docker/E2E/migration tasks: use `1800000` (30 min). |
 | `--out-dir <path>` | `<cwd>/.codex-artifacts/grok-acp-runs` | Directory for Markdown and JSON run reports. |
 | `--name <name>` | prompt filename | Human-readable report suffix. |
 | `--quiet` | false | Suppress Grok reply on stdout; reports are still written. |
@@ -173,6 +189,23 @@ The tool follows the official headless example:
 2. Prefer `xai.api_key` when `XAI_API_KEY` exists and the server offers it.
 3. Otherwise use `cached_token`.
 4. If neither is available, run `grok login` first or set `XAI_API_KEY`.
+
+## Monitor UI
+
+Every `run` and `compact` invocation records task metadata, throughput samples, and streamed output under `$GROK_ACP_HOME` (default `~/.grok-acp`), retained for 7 days. `grok-acp new` does not write monitor records. Use the same `$GROK_ACP_HOME` for dispatch and `grok-acp ui`, or tasks will not appear in the dashboard. This recording is a side channel: failures in it never affect the ACP dispatch itself.
+
+Serve a local, read-only dashboard over that data:
+
+```bash
+npm run ui:build   # one-time: build the ui/ frontend (requires npm access to ui/'s own deps)
+npm run ui         # start the monitor server, default http://127.0.0.1:41730
+```
+
+Before `ui/dist` is built, `npm run ui` still starts the API/SSE server and serves a plain-text build hint at `/`. Generate synthetic tasks for local UI development without calling Grok:
+
+```bash
+npm run fake        # writes fake running/done/error tasks under /tmp/grok-acp-demo
+```
 
 ## PM Usage Rules
 
