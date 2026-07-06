@@ -1,4 +1,4 @@
-import { describe, it } from "node:test";
+import { describe, it, after } from "node:test";
 import assert from "node:assert";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -25,6 +25,12 @@ function grokOnPath() {
 const SKIP_SMOKE = grokOnPath() ? false : "grok CLI 不在 PATH（CI/无登录环境），跳过 smoke";
 
 describe("smoke tests", () => {
+  // Mirror `npm run smoke`'s ephemeral mktemp -d lifecycle: don't leave a
+  // temp home in /tmp on every `npm test` run.
+  after(() => {
+    fs.rmSync(SMOKE_HOME, { recursive: true, force: true });
+  });
+
   it("grok-acp run with inline prompt should succeed", { skip: SKIP_SMOKE }, () => {
     const result = spawnSync("node", [
       binPath,

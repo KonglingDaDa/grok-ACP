@@ -54,7 +54,7 @@ describe("taskForList", () => {
   });
 });
 
-describe("createTaskIndex recheckInterrupted (self-heal)", () => {
+describe("createTaskIndex refreshRunningTasks (self-heal)", () => {
   function writeMeta(runsDir, taskId, meta) {
     const dir = path.join(runsDir, taskId);
     fs.mkdirSync(dir, { recursive: true });
@@ -76,7 +76,7 @@ describe("createTaskIndex recheckInterrupted (self-heal)", () => {
       // meta is stale (fs.watch dropped the event).
       writeMeta(runsDir, "t1", { status: "done", pid: 999_999_999, endedAt: new Date().toISOString() });
 
-      index.recheckInterrupted();
+      index.refreshRunningTasks();
 
       assert.strictEqual(index.tasksById.get("t1").effectiveStatus, "done", "should self-heal to done");
       assert.ok(
@@ -96,7 +96,7 @@ describe("createTaskIndex recheckInterrupted (self-heal)", () => {
       writeMeta(runsDir, "t2", { status: "running", pid: 999_999_999, heartbeatAt: new Date().toISOString() });
       index.upsertTask("t2", { broadcast: false });
 
-      index.recheckInterrupted();
+      index.refreshRunningTasks();
 
       assert.strictEqual(index.tasksById.get("t2").effectiveStatus, "interrupted");
     } finally {

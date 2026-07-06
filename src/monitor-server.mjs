@@ -7,7 +7,7 @@ import { cleanupOldRuns } from "./task-recorder.mjs";
 import { createTaskIndex } from "./monitor-task-index.mjs";
 import { createMonitorRouter } from "./monitor-routes.mjs";
 
-const INTERRUPTED_RECHECK_MS = 2000;
+const RUNNING_REFRESH_MS = 2000;
 const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
 const SSE_PING_MS = 15000;
 const MAX_AGE_DAYS = 7;
@@ -95,8 +95,8 @@ export function startMonitorServer({ port = 41730, host = "127.0.0.1" } = {}) {
     console.error(`grokACP monitor: failed to watch ${runsDir}: ${err.message}`);
   }
 
-  const interruptedRecheckTimer = setInterval(() => index.recheckInterrupted(), INTERRUPTED_RECHECK_MS);
-  if (typeof interruptedRecheckTimer.unref === "function") interruptedRecheckTimer.unref();
+  const runningRefreshTimer = setInterval(() => index.refreshRunningTasks(), RUNNING_REFRESH_MS);
+  if (typeof runningRefreshTimer.unref === "function") runningRefreshTimer.unref();
 
   const cleanupTimer = setInterval(() => {
     const removed = safeCall(() => cleanupOldRuns(runsDir, MAX_AGE_DAYS)) ?? [];
@@ -129,7 +129,7 @@ export function startMonitorServer({ port = 41730, host = "127.0.0.1" } = {}) {
         // ignore
       }
     }
-    clearInterval(interruptedRecheckTimer);
+    clearInterval(runningRefreshTimer);
     clearInterval(cleanupTimer);
     index.closeAllWatchers();
   });

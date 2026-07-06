@@ -33,6 +33,7 @@ git config core.hooksPath .githooks
 - **coverage**（Node 22）：`npm run coverage` —— 源码覆盖率地板 `lines≥35 / branches≥55 / funcs≥42`（排除 `test/`、`tools/`）。这是**防倒退地板**，不是目标。
   - **口径（重要）**：Node `--experimental-test-coverage` 会**合并子进程覆盖率**。`test/smoke.test.mjs` 在本地（有 grok）以子进程跑真实 `bin→cli→acp-client` 全链路，会把覆盖率灌到 ~56%；但 CI 无 grok、smoke 自动跳过，覆盖率回落到单测真实值（~40% lines / ~68% branch / ~48% funcs）。**地板按 CI 真实条件（grok 缺失）设定**，故数字偏低是刻意的——它约束的是可移植单测覆盖的 `src/` 子集，不含 `cli`/`monitor-server`/`monitor-routes`/`session-store` 等由集成测试（smoke、`npm run test:monitor`）覆盖的部分。
   - **仅 Node 22+**：覆盖率阈值 flag（`--test-coverage-lines` 等）是 Node 22 引入的，`npm run coverage` 必须在 Node 22 跑（本地 Node 20 会不 enforce）。CI 已固定在 Node 22。
+- **monitor**（Node 22）：`npm run test:monitor` —— 监控 HTTP/SSE/DELETE 契约集成测试。用临时 `GROK_ACP_HOME` + 假任务（`dev-fake-task`），**不需要 grok**，故在 CI 强制跑。
 - **ui**（Node 22）：`npm ci` + `vitest run` + `vite build`（含 `tsc -b --noEmit` 类型检查）。
 
 CI 全绿是合入 `main` 的前置条件。

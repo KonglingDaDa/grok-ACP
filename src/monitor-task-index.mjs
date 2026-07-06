@@ -215,7 +215,7 @@ export function createTaskIndex(runsDir, { onTask, onSample }) {
     }
   }
 
-  function recheckInterrupted() {
+  function refreshRunningTasks() {
     // Re-read meta from disk for tasks we still believe are running. A fast-
     // completing run can write its terminal status (done/error/timeout) while
     // fs.watch drops the change event, leaving the cached meta stale and the
@@ -263,7 +263,7 @@ export function createTaskIndex(runsDir, { onTask, onSample }) {
     upsertTask,
     fullRescan,
     scheduleTopLevelRescan,
-    recheckInterrupted,
+    refreshRunningTasks,
     removeTaskRecord,
     closeAllWatchers,
   };
