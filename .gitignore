@@ -1,3 +1,12 @@
 node_modules/
 .runs/
+ui/dist/
 npm-debug.log*
+
+# Generated / machine-local artifacts — never commit
+# .codex-artifacts: Grok run reports + screenshots (default out-dir)
+# .gitnexus: code-graph index (rebuilt by `gitnexus analyze`)
+# .hallmark: hallmark design-tool state
+.codex-artifacts/
+.gitnexus/
+.hallmark/
