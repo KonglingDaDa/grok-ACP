@@ -19,6 +19,9 @@ export function writeRunReport(options) {
     cwd: options.cwd,
     promptSource: options.promptSource,
     sessionId: options.result.sessionId,
+    // status/error 仅在失败/超时的部分回执里出现；成功路径不传，输出保持不变
+    status: options.result.status ?? null,
+    error: options.result.error ?? null,
     stopReason: options.result.promptResult?.stopReason ?? null,
     promptMeta: options.result.promptResult?._meta ?? null,
     authMethod: options.result.authMethod,
@@ -34,19 +37,20 @@ export function writeRunReport(options) {
 }
 
 function renderMarkdown(payload) {
-  return `# Grok ACP Run
+  const partial = payload.status && payload.status !== "done";
+  return `# Grok ACP Run${partial ? ` (${payload.status})` : ""}
 
 - created_at_beijing: ${payload.createdAtBeijing}
 - model: ${payload.model}
 - cwd: ${payload.cwd}
 - prompt_source: ${payload.promptSource}
 - session_id: ${payload.sessionId}
-- stop_reason: ${payload.stopReason ?? "unknown"}
+${payload.status ? `- status: ${payload.status}\n` : ""}- stop_reason: ${payload.stopReason ?? "unknown"}
 - auth_method: ${payload.authMethod}
 - prompt_total_tokens: ${payload.promptMeta?.totalTokens ?? "unknown"}
 - prompt_model_id: ${payload.promptMeta?.modelId ?? "unknown"}
-
-## Grok Reply
+${payload.error ? `\n## Error\n\n\`\`\`text\n${payload.error}\n\`\`\`\n` : ""}
+## Grok Reply${partial ? " (partial)" : ""}
 
 ${payload.text || "_No text returned._"}
 

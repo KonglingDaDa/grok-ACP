@@ -3,6 +3,15 @@ import path from "node:path";
 
 export const DEFAULT_MODEL = "grok-composer-2.5-fast";
 export const DEFAULT_ZQ_CWD = "/home/desk/dev/repos/zq";
+/**
+ * JSON-RPC request timeout when --timeout-ms is omitted (run, compact, new).
+ *
+ * 20 分钟。不要无理由调小 —— 曾经是 120_000（2 分钟），一次重构把它设回 2 分钟，
+ * 导致 Docker rebuild / C2C smoke / migration 这类正常任务在 session/prompt 阶段
+ * 误超时。PM 派发的任务几乎都不是"秒级"的；宁可等，也不要假超时。
+ * 重型 infra 任务（Docker + E2E + 资金链路）应显式 `--timeout-ms 1800000`（30 分钟）。
+ */
+export const DEFAULT_TIMEOUT_MS = 1_200_000;
 
 export function parseArgs(argv) {
   const result = { _: [] };
