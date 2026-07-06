@@ -128,6 +128,7 @@ export function createTaskRecorder(options = {}) {
     heartbeatAt: startedAt,
     tokensOut: 0,
     chars: 0,
+    toolCallCount: 0,
     resultStart: 0,
     durationMs: null,
     context: null,
@@ -248,8 +249,14 @@ export function createTaskRecorder(options = {}) {
     }
   }
 
-  function onToolEvent() {
+  function onToolEvent(sessionUpdate) {
     try {
+      // Count distinct tool calls only; tool_call_update events are progress
+      // ticks for an in-flight call and must not inflate the count. When called
+      // without a type (older callers), default to counting.
+      if (sessionUpdate === undefined || sessionUpdate === "tool_call") {
+        state.toolCallCount += 1;
+      }
       state.resultStart = state.chars;
     } catch (err) {
       warnOnce(

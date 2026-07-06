@@ -40,6 +40,8 @@ export interface TaskMeta {
   heartbeatAt: string
   tokensOut: number
   chars: number
+  /** Distinct tool calls so far (live during running). Optional: absent on pre-feature meta.json. */
+  toolCallCount?: number
   durationMs: number | null
   context: TaskContext | null
   resultStart?: number | null
